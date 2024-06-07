@@ -57,7 +57,6 @@ st.markdown(
 # Main
 # -------------------------------------------------------------------------------------------------
 
-
 if 'user_info' not in st.session_state:
     col1, col2, col3 = st.columns([1, 2, 1])
 
@@ -128,70 +127,86 @@ else:
 
             # Column 2: Classification result and donut chart
             with col2:
-                # Classify image
-                top_classes = classify(image, model, class_names, top_n=1)
+                # Check if prediction is already made
+                if 'prediction_made' not in st.session_state:
+                    # Classify image
+                    top_classes = classify(image, model, class_names, top_n=1)
 
-                # Display the top class and its confidence score
-                top_class_name, top_conf_score = top_classes[0]
-                top_conf_percentage = top_conf_score * 100
+                    # Display the top class and its confidence score
+                    top_class_name, top_conf_score = top_classes[0]
+                    top_conf_percentage = top_conf_score * 100
 
-                # Get the index of the second class (other than the top class)
-                second_class_index = 1 if top_class_name == class_names[0] else 0
+                    # Get the index of the second class (other than the top class)
+                    second_class_index = 1 if top_class_name == class_names[0] else 0
 
-                # Get the name and score of the second class
-                second_class_name = class_names[second_class_index]
-                second_conf_score = 1 - top_conf_score
-                second_conf_percentage = 100 - top_conf_percentage
+                    # Get the name and score of the second class
+                    second_class_name = class_names[second_class_index]
+                    second_conf_score = 1 - top_conf_score
+                    second_conf_percentage = 100 - top_conf_percentage
 
-                # Display the box with scores of both classes
-                st.markdown(f"""
-                <div class="box">
-                    <h2 style="color: white; text-align: center;">Result</h2>
-                    <h3 style="color: white;">{top_class_name} - {top_conf_percentage:.1f}%</h3>
-                    <h3 style="color: white;">{second_class_name} - {second_conf_percentage:.1f}%</h3>
-                </div>
-                """, unsafe_allow_html=True)
+                    # Display the box with scores of both classes and status
+                    status = "Acc" if top_class_name == "perfect" else "Reject" if top_class_name == "defect" else ""
+                    st.markdown(f"""
+                    <div class="box">
+                        <h2 style="color: white; text-align: center;">Result</h2>
+                        <h3 style="color: white;">{top_class_name} : {top_conf_percentage:.1f}%</h3>
+                        <h3 style="color: white;">Status: {status}</h3>
+                    </div>
+                    """, unsafe_allow_html=True)
+    
+                    # Create a donut chart
+                    fig, ax = plt.subplots()
+                    sizes = [top_conf_score, second_conf_score]
+                    labels = [f'{class_name} ({conf_percentage:.1f}%)' for class_name, conf_percentage in zip([top_class_name, second_class_name], [top_conf_percentage, second_conf_percentage])]
 
-                # Create a donut chart
-                fig, ax = plt.subplots()
-                sizes = [top_conf_score, second_conf_score]
-                labels = [f'{class_name} ({conf_percentage:.1f}%)' for class_name, conf_percentage in zip([top_class_name, second_class_name], [top_conf_percentage, second_conf_percentage])]
-                colors = ['#ff9999', '#66b3ff']
-                ax.pie(sizes, labels=labels, colors=colors, startangle=90, counterclock=False, wedgeprops={'width': 0.3, 'edgecolor': 'w'})
-                ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+                    # Determine colors based on prediction
+                    colors = ['#66b3ff', '#ff9999'] if top_class_name == "perfect" else ['#ff9999', '#66b3ff']
 
-                # Display the donut chart
-                st.pyplot(fig)
+                    explode = (0.1, 0) if top_class_name == "perfect" else (0, 0.1)
+                    ax.pie(sizes, labels=labels, colors=colors, explode=explode, startangle=90, counterclock=False, wedgeprops={'width': 0.3, 'edgecolor': 'w'})
+                    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
-                # Save the result to history
-                log = pd.DataFrame([{
-                    "filename": file.name,
-                    "class_name": top_class_name,
-                    "confidence_score": f"{top_conf_percentage:.1f}%",
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }])
+                    # Display the donut chart
+                    st.pyplot(fig)
 
-                # Load existing history if available
-                history_path = os.path.join(os.path.dirname(__file__), 'pages/history.csv')
-                try:
-                    history = pd.read_csv(history_path)
-                except FileNotFoundError:
-                    history = pd.DataFrame(columns=["filename", "class_name", "confidence_score", "timestamp"])
 
-                # Append new log using pd.concat
-                history = pd.concat([history, log], ignore_index=True)
 
-                # Save updated history
-                history.to_csv(history_path, index=False)
+                    # Save the result to history
+                    log = pd.DataFrame([{
+                        "filename": file.name,
+                        "class_name": top_class_name,
+                        "status": status,
+                        "confidence_score": f"{top_conf_percentage:.1f}%",
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }])
+
+                    # Load existing history if available
+                    history_path = os.path.join(os.path.dirname(__file__), 'pages/history.csv')
+                    try:
+                        history = pd.read_csv(history_path)
+                    except FileNotFoundError:
+                        history = pd.DataFrame(columns=["filename", "class_name", "status", "confidence_score", "timestamp"])
+
+                    # Append new log using pd.concat
+                    history = pd.concat([history, log], ignore_index=True)
+
+                    # Save updated history
+                    history.to_csv(history_path, index=False)
+
+                    # Set session state to indicate prediction is made
+                    st.session_state.prediction_made = True
 
             # Show the reset button below the donut chart
             st.markdown('<div class="center-button">', unsafe_allow_html=True)
             if st.button('Reset'):
                 if 'prediction_started' in st.session_state:
                     del st.session_state.prediction_started
+                if 'prediction_made' in st.session_state:
+                    del st.session_state.prediction_made
                 st.experimental_rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
     # Sign out
     if st.sidebar.button(label='Sign Out', on_click=auth_functions.sign_out, type='primary'):
-        pass  #
+        pass
+

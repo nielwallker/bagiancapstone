@@ -51,10 +51,9 @@ st.markdown('<div class="title-box">Classification History</div>', unsafe_allow_
 
 # Load the history
 history_path = os.path.join(os.path.dirname(__file__), 'history.csv')
+
 try:
     history = pd.read_csv(history_path)
-    # Drop the class_name column
-    history.drop(columns=['class_name'], inplace=True)
     st.table(history)
 
     # Add a download button
@@ -97,7 +96,6 @@ try:
     # Add a button to share the history via Email
     if st.button("Share via Email"):
         share_via_email(history)
-
 
 except FileNotFoundError:
     st.write("No history available. Please upload and classify images using the home page.")

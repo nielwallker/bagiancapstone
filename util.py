@@ -42,18 +42,22 @@ def classify(image, model, class_names, top_n=1):
         A list of tuples of the predicted class names and their confidence scores.
     """
     # Check if the image is grayscale
-    if image.mode != 'L':
-        image = ImageOps.grayscale(image)
+    if image.mode == 'L':
+        # Convert grayscale image to 3-channel grayscale image
+        image = image.convert('RGB')
+    else:
+        # Ensure the image is in RGB mode
+        image = image.convert('RGB')
 
     # Resize the image to match the input shape expected by the model
-    image = image.resize((300, 300))
+    target_size = (200, 200)  # Ensure this matches your model's expected input size
+    image = image.resize(target_size)
 
     # Convert image to numpy array and normalize
     image_array = np.array(image) / 255.0
 
     # Expand dimensions to match the input shape expected by the model
-    image_array = np.expand_dims(image_array, axis=-1)  # Add channel dimension for grayscale image
-    image_array = np.expand_dims(image_array, axis=0)   # Add batch dimension
+    image_array = np.expand_dims(image_array, axis=0)  # Add batch dimension
 
     # Make prediction
     prediction = model.predict(image_array)
@@ -63,3 +67,10 @@ def classify(image, model, class_names, top_n=1):
     top_classes = [(class_names[i], prediction[0][i]) for i in top_indices]
 
     return top_classes
+
+# Example usage (commented out since we don't have the actual model and class names here):
+# image = Image.open('path_to_your_image.jpg')
+# model = tf.keras.models.load_model('path_to_your_model.h5')
+# class_names = ['class1', 'class2', 'class3']  # replace with actual class names
+# top_classes = classify(image, model, class_names, top_n=1)
+# print(top_classes)

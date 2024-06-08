@@ -111,7 +111,7 @@ if not is_user_logged_in():
         del st.session_state.auth_warning
     else:
     # Your page content here for logged-in users
-            st.write("You are logged in.")
+           # st.write("You are logged in.")
 else:
     # Set title
     st.markdown('<div class="title-box">Quality Cast</div>', unsafe_allow_html=True)

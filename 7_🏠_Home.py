@@ -56,12 +56,31 @@ st.markdown(
 # -------------------------------------------------------------------------------------------------
 # Main
 # -------------------------------------------------------------------------------------------------
+# Function to check if user is logged in
+def is_user_logged_in():
+    return 'user_info' in st.session_state
 
-if 'user_info' not in st.session_state:
+# Authentication required for page access
+if not is_user_logged_in():
     col1, col2, col3 = st.columns([1, 2, 1])
 
+    with col2:
+        # Add welcome message with a box
+        st.markdown(
+            """
+            <div style='border: 2px solid #ddd; padding: 20px; border-radius: 10px; background-color: #000; color: #fff; text-align: center; margin-bottom: 20px;'>
+                <h2>Welcome to Quality Cast App</h2>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
     # Authentication form layout
-    do_you_have_an_account = col2.selectbox(label='Do you have an account?', options=('Yes', 'No', 'I forgot my password'), help='Select one option', key='auth_select')
+    do_you_have_an_account = col2.selectbox(
+        label='Do you have an account?', 
+        options=('Yes', 'No', 'I forgot my password'), 
+        help='Select one option', 
+        key='auth_select'
+    )
     st.markdown('<style>select#auth_select { font-size: 18px; }</style>', unsafe_allow_html=True)
     auth_form = col2.form(key='Authentication form', clear_on_submit=False)
     email = auth_form.text_input(label='Email')
@@ -90,7 +109,9 @@ if 'user_info' not in st.session_state:
     elif 'auth_warning' in st.session_state:
         auth_notification.warning(st.session_state.auth_warning)
         del st.session_state.auth_warning
-
+    else:
+    # Your page content here for logged-in users
+        st.write("You are logged in.")
 else:
     # Set title
     st.markdown('<div class="title-box">Quality Cast</div>', unsafe_allow_html=True)

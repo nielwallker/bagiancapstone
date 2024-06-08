@@ -4,6 +4,11 @@ import os
 import logging
 import auth_functions
 
+# Check if user is logged in
+if not st.session_state.get('user_info'):
+    st.warning('You must log in to access this page.')
+    st.stop()
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

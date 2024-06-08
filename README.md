@@ -1,5 +1,5 @@
 # Capstone Project Kelompok 37 -> Challenge Manufacturing & Industry
-# Quality Control Produk Casting dengan metode CNN
+Quality Control Produk Casting dengan metode CNN
 # Nama WebApp : qualitycast -> Link : https://qualitycastapps.streamlit.app/
 # Aplikasi akan Melakukan prediksi gambar sesuai modeltraining dengan data class 'defect' & class 'perfect'
 # jika prediksi gambar 'defect' maka status = Reject & jika prediksi gambar 'perfect' maka status 'Acc'

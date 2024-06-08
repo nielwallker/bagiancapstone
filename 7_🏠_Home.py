@@ -56,55 +56,62 @@ st.markdown(
 # -------------------------------------------------------------------------------------------------
 # Main
 # -------------------------------------------------------------------------------------------------
+# Function to check if user is logged in
+def is_user_logged_in():
+    return 'user_info' in st.session_state
 
-col1, col2, col3 = st.columns([1, 2, 1])
+# Authentication required for page access
+if not is_user_logged_in():
+    col1, col2, col3 = st.columns([1, 2, 1])
 
-with col2:
-    # Add welcome message with a box
-    st.markdown(
-        """
-        <div style='border: 2px solid #ddd; padding: 20px; border-radius: 10px; background-color: #000; color: #fff; text-align: center; margin-bottom: 20px;'>
-            <h2>Welcome to Quality Cast App</h2>
-        </div>
-        """, unsafe_allow_html=True
+    with col2:
+        # Add welcome message with a box
+        st.markdown(
+            """
+            <div style='border: 2px solid #ddd; padding: 20px; border-radius: 10px; background-color: #000; color: #fff; text-align: center; margin-bottom: 20px;'>
+                <h2>Welcome to Quality Cast App</h2>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+    # Authentication form layout
+    do_you_have_an_account = col2.selectbox(
+        label='Do you have an account?', 
+        options=('Yes', 'No', 'I forgot my password'), 
+        help='Select one option', 
+        key='auth_select'
     )
+    st.markdown('<style>select#auth_select { font-size: 18px; }</style>', unsafe_allow_html=True)
+    auth_form = col2.form(key='Authentication form', clear_on_submit=False)
+    email = auth_form.text_input(label='Email')
+    password = auth_form.text_input(label='Password', type='password') if do_you_have_an_account in {'Yes', 'No'} else auth_form.empty()
+    auth_notification = col2.empty()
 
-# Authentication form layout
-do_you_have_an_account = col2.selectbox(
-    label='Do you have an account?', 
-    options=('Yes', 'No', 'I forgot my password'), 
-    help='Select one option', 
-    key='auth_select'
-)
-st.markdown('<style>select#auth_select { font-size: 18px; }</style>', unsafe_allow_html=True)
-auth_form = col2.form(key='Authentication form', clear_on_submit=False)
-email = auth_form.text_input(label='Email')
-password = auth_form.text_input(label='Password', type='password') if do_you_have_an_account in {'Yes', 'No'} else auth_form.empty()
-auth_notification = col2.empty()
+    # Sign In
+    if do_you_have_an_account == 'Yes' and auth_form.form_submit_button(label='Sign In', use_container_width=True, type='primary'):
+        with auth_notification, st.spinner('Signing in'):
+            auth_functions.sign_in(email, password)
 
-# Sign In
-if do_you_have_an_account == 'Yes' and auth_form.form_submit_button(label='Sign In', use_container_width=True, type='primary'):
-    with auth_notification, st.spinner('Signing in'):
-        auth_functions.sign_in(email, password)
+    # Create Account
+    elif do_you_have_an_account == 'No' and auth_form.form_submit_button(label='Create Account', use_container_width=True, type='primary'):
+        with auth_notification, st.spinner('Creating account'):
+            auth_functions.create_account(email, password)
 
-# Create Account
-elif do_you_have_an_account == 'No' and auth_form.form_submit_button(label='Create Account', use_container_width=True, type='primary'):
-    with auth_notification, st.spinner('Creating account'):
-        auth_functions.create_account(email, password)
+    # Password Reset
+    elif do_you_have_an_account == 'I forgot my password' and auth_form.form_submit_button(label='Send Password Reset Email', use_container_width=True, type='primary'):
+        with auth_notification, st.spinner('Sending password reset link'):
+            auth_functions.reset_password(email)
 
-# Password Reset
-elif do_you_have_an_account == 'I forgot my password' and auth_form.form_submit_button(label='Send Password Reset Email', use_container_width=True, type='primary'):
-    with auth_notification, st.spinner('Sending password reset link'):
-        auth_functions.reset_password(email)
-
-# Authentication success and warning messages
-if 'auth_success' in st.session_state:
-    auth_notification.success(st.session_state.auth_success)
-    del st.session_state.auth_success
-elif 'auth_warning' in st.session_state:
-    auth_notification.warning(st.session_state.auth_warning)
-    del st.session_state.auth_warning
-
+    # Authentication success and warning messages
+    if 'auth_success' in st.session_state:
+        auth_notification.success(st.session_state.auth_success)
+        del st.session_state.auth_success
+    elif 'auth_warning' in st.session_state:
+        auth_notification.warning(st.session_state.auth_warning)
+        del st.session_state.auth_warning
+    else:
+    # Your page content here for logged-in users
+        st.write("You are logged in.")
 else:
     # Set title
     st.markdown('<div class="title-box">Quality Cast</div>', unsafe_allow_html=True)
@@ -182,6 +189,8 @@ else:
 
                     # Display the donut chart
                     st.pyplot(fig)
+
+
 
                     # Save the result to history
                     log = pd.DataFrame([{

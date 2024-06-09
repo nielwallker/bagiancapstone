@@ -4,6 +4,8 @@
 
 **Nama WebApp:** qualitycast  
 **Link:** [qualitycastapps.streamlit.app](https://qualitycastapps.streamlit.app/)
+** Seluruh file pada repository ini diambil dari repository kami sebelumnya, kami membuat repository ini karena batasan size dalam upload file model**
+**Link Repository Sebelumnya** [(https://github.com/TaufiiquRahman/QualityCastApp.git)]
 
 Aplikasi ini akan melakukan prediksi gambar sesuai model training dengan data kelas 'defect' dan kelas 'perfect'. Jika prediksi gambar 'defect', maka status = Reject. Jika prediksi gambar 'perfect', maka status = Accepted.
 

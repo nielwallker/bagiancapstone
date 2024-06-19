@@ -122,6 +122,7 @@ else:
     # Upload file
     file = st.file_uploader('', type=['jpeg', 'jpg', 'png'])
 
+    @st.cache
     # Load classifier
     model = load_model('./modelnew.h5')
 
